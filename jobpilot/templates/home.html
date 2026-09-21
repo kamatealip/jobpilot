@@ -1,0 +1,77 @@
+{% extends "layout.html" %} {% block title %}Home{% endblock %} {% block content
+%}
+<div class="chat-layout">
+  <div class="chat-topbar">
+    <h1 class="chat-title">New Chat</h1>
+    <button class="new-chat-btn" type="button" aria-label="New chat">◌</button>
+  </div>
+
+  <p class="chat-welcome">How can I help you today?</p>
+
+  <div class="chat-info">
+    <div class="chat-bot-icon">◌</div>
+    <h2 class="chat-greeting">Morning, user!</h2>
+    <div class="chat-subtext">
+      What are we working on today? Press send to start a new conversation.
+    </div>
+  </div>
+
+  <form
+    class="job-upload-form"
+    method="post"
+    enctype="multipart/form-data"
+    novalidate
+  >
+    {{ form.hidden_tag() }}
+
+    <div class="form-row file-row">
+      {{ form.file.label(class="field-label") }} {{
+      form.file(class="form-control file-input") }} {% if form.file.errors %}
+      <div class="field-error">{{ form.file.errors[0] }}</div>
+      {% endif %}
+    </div>
+
+    <div class="form-row">
+      {{ form.job_description.label(class="field-label") }} {{
+      form.job_description(class="form-control textarea-input", rows=5,
+      placeholder="Paste the job description here...") }} {% if
+      form.job_description.errors %}
+      <div class="field-error">{{ form.job_description.errors[0] }}</div>
+      {% endif %}
+    </div>
+
+    <div class="form-row">
+      {{ form.job_link.label(class="field-label") }} {{
+      form.job_link(class="form-control text-input",
+      placeholder="https://example.com/job-posting") }} {% if
+      form.job_link.errors %}
+      <div class="field-error">{{ form.job_link.errors[0] }}</div>
+      {% endif %}
+    </div>
+
+    {% if form.job_description.errors or form.job_link.errors %}
+    <div class="field-error global-error">
+      Please upload a file, paste a job description, or add a job link.
+    </div>
+    {% endif %}
+
+    <div class="form-actions">{{ form.submit(class="submit-btn") }}</div>
+  </form>
+
+  {% if submitted %}
+  <div class="submission-summary">
+    <h3>Submission received</h3>
+    {% if uploaded_file %}
+    <p>Uploaded file: {{ uploaded_file.filename }}</p>
+    {% endif %} {% if job_description %}
+    <p>
+      Job description captured: {{ job_description[:120] }}{% if
+      job_description|length > 120 %}...{% endif %}
+    </p>
+    {% endif %} {% if job_link %}
+    <p>Job link: {{ job_link }}</p>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

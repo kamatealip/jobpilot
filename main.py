@@ -1,6 +1,5 @@
-def main():
-    print("Hello from jobpilot!")
+from jobpilot import app 
 
 
 if __name__ == "__main__":
-    main()
+    app.run(debug=True)
