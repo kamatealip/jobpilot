@@ -1049,6 +1049,7 @@ dependencies = [
     { name = "langchain-community" },
     { name = "langchain-google-genai" },
     { name = "pypdf" },
+    { name = "python-dotenv" },
 ]
 
 [package.metadata]
@@ -1061,6 +1062,7 @@ requires-dist = [
     { name = "langchain-community", specifier = ">=0.4.2" },
     { name = "langchain-google-genai", specifier = ">=4.4.0" },
     { name = "pypdf", specifier = ">=6.19.0" },
+    { name = "python-dotenv", specifier = ">=1.2.3" },
 ]
 
 [[package]]

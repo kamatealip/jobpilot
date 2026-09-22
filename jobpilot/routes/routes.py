@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from flask import render_template
+from flask import render_template, request
 from werkzeug.utils import secure_filename
 
 from jobpilot import app
@@ -8,6 +8,8 @@ from jobpilot.forms.chat_form import ChatForm
 from jobpilot.rag.loader import load_resume
 from jobpilot.rag.splitter import split_resume
 from jobpilot.rag.vectorstore import build_vector_store
+from jobpilot.services import job_services
+from jobpilot.services.job_services import JobService
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -47,6 +49,31 @@ def home():
                 )
             except Exception as exc:
                 error = str(exc)
+
+    if request.method == "POST":
+        job_description = form.job_description.data
+
+        if not job_description:
+            return render_template(
+                "home.html",
+                form=form,
+                submitted=False,
+                error="Job description is required",
+            )
+
+        try:
+            result = job_services.process_job_description(
+                job_description
+            )
+
+            return render_template(
+                "home.html",
+                form=form,
+                submitted=True,
+                result=result,
+            )
+        except Exception as exc:
+            error = str(exc)
 
     return render_template(
         "home.html",
