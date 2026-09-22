@@ -65,9 +65,20 @@ db.sqlite3-journal
 instance/
 .webassets-cache
 
+<<<<<<< HEAD
 # JobPilot uploaded files and vector data
 jobpilot/uploads/
 jobpilot/data/
+=======
+# Uploaded user files and generated app data
+jobpilot/uploads/
+uploads/
+data/
+jobpilot/data/
+jobpilot/data/vectorstore/
+data/resume/
+data/evaluations/
+>>>>>>> 2b515c2 (Add job parsing and storage functionality with tests)
 
 # Scrapy stuff:
 .scrapy
