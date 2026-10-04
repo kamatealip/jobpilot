@@ -282,6 +282,132 @@ body {
   color: var(--muted-text);
 }
 
+.soft-warning {
+  color: #92400e !important;
+}
+
+.job-result {
+  margin-top: 24px;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  padding: 22px;
+  background: #ffffff;
+}
+
+.result-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.result-header h3 {
+  margin: 0;
+  font-size: 1.35rem;
+  line-height: 1.25;
+}
+
+.result-meta,
+.source-title,
+.score-note {
+  margin: 8px 0 0;
+  color: var(--muted-text);
+  line-height: 1.5;
+}
+
+.source-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: #111827;
+  text-decoration: none;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.source-link:hover {
+  color: #111827;
+  background: #f9fafb;
+}
+
+.match-block,
+.topic-section,
+.match-grid {
+  margin-top: 22px;
+}
+
+.score-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.score-value {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.score-label {
+  color: var(--muted-text);
+  font-weight: 700;
+}
+
+.score-track {
+  height: 12px;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5e7eb;
+}
+
+.score-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: #2563eb;
+}
+
+.topic-section h4,
+.match-grid h4 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+
+.topic-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.topic-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  border: 1px solid #dbeafe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.match-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.topic-column {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted-text);
+  line-height: 1.6;
+}
+
 @media (max-width: 640px) {
   .page-shell {
     padding-left: 14px;
@@ -326,5 +452,16 @@ body {
   .chat-send {
     width: 40px;
     height: 40px;
+  }
+
+  .result-header,
+  .match-grid {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .source-link {
+    width: 100%;
+    justify-content: center;
   }
 }

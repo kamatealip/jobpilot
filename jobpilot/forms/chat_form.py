@@ -9,8 +9,8 @@ class ChatForm(FlaskForm):
         "Upload file",
         validators=[
             FileAllowed(
-                ["pdf", "doc", "docx", "txt", "md", "csv"],
-                "Only PDF, Word, text, and CSV files are allowed.",
+                ["pdf", "docx", "txt", "md", "csv"],
+                "Only PDF, Word (.docx), text, markdown, and CSV files are allowed.",
             )
         ],
     )
@@ -28,7 +28,7 @@ class ChatForm(FlaskForm):
         if not super().validate(extra_validators):
             return False
 
-        file_present = bool(self.file.data)
+        file_present = bool(self.file.data and self.file.data.filename)
         jd_present = bool(self.job_description.data and self.job_description.data.strip())
         link_present = bool(self.job_link.data and self.job_link.data.strip())
 
@@ -45,4 +45,3 @@ class ChatForm(FlaskForm):
             return False
 
         return True
-
