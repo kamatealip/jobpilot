@@ -69,29 +69,32 @@
     <p>Vector collection: {{ collection_name }}</p>
     {% endif %} {% if vector_store_error %}
     <p class="soft-warning">
-      Resume text was loaded, but vector indexing was skipped: {{ vector_store_error }}
+      Resume text was loaded, but vector indexing was skipped: {{
+      vector_store_error }}
     </p>
     {% endif %}
   </div>
 
-  {% if result %}
-  {% set parsed = result.parsed %}
+  {% if result %} {% set parsed = result.parsed %}
   <section class="job-result">
     <div class="result-header">
       <div>
         <h3>{{ parsed.title }}</h3>
         <p class="result-meta">
-          {% if parsed.company %}{{ parsed.company }}{% endif %}
-          {% if parsed.company and parsed.location %} · {% endif %}
-          {% if parsed.location %}{{ parsed.location }}{% endif %}
-          {% if parsed.employment_type %}
-          {% if parsed.company or parsed.location %} · {% endif %}
-          {{ parsed.employment_type }}
-          {% endif %}
+          {% if parsed.company %}{{ parsed.company }}{% endif %} {% if
+          parsed.company and parsed.location %} · {% endif %} {% if
+          parsed.location %}{{ parsed.location }}{% endif %} {% if
+          parsed.employment_type %} {% if parsed.company or parsed.location %} ·
+          {% endif %} {{ parsed.employment_type }} {% endif %}
         </p>
       </div>
       {% if result.source and result.source.url %}
-      <a class="source-link" href="{{ result.source.url }}" target="_blank" rel="noreferrer">
+      <a
+        class="source-link"
+        href="{{ result.source.url }}"
+        target="_blank"
+        rel="noreferrer"
+      >
         View source
       </a>
       {% endif %}
@@ -99,9 +102,7 @@
 
     {% if result.source and result.source.title %}
     <p class="source-title">{{ result.source.title }}</p>
-    {% endif %}
-
-    {% if result.match %}
+    {% endif %} {% if result.match %}
     <div class="match-block">
       <div class="score-line">
         <span class="score-value">{{ result.match.score }}%</span>
@@ -111,15 +112,24 @@
         <div class="score-fill" style="width: {{ result.match.score }}%"></div>
       </div>
       <p class="score-note">
-        Matched {{ result.match.matched_count }} of {{ result.match.topic_count }}
-        important topics found in the job description.
+        Matched {{ result.match.matched_count }} of {{ result.match.topic_count
+        }} important topics found in the job description.
       </p>
+      {% if result.tailored_resume_url %}
+      <a class="download-resume-btn" href="{{ result.tailored_resume_url }}">
+        Download tailored resume (.docx)
+      </a>
+      <p class="score-note">
+        Original resume details are preserved; only skills already found in your
+        resume are highlighted.
+      </p>
+      {% endif %}
     </div>
     {% elif result.source %}
-    <p class="score-note">Upload a resume with the job link to generate a match score.</p>
-    {% endif %}
-
-    {% if result.important_topics %}
+    <p class="score-note">
+      Upload a resume with the job link to generate a match score.
+    </p>
+    {% endif %} {% if result.important_topics %}
     <div class="topic-section">
       <h4>Important topics</h4>
       <div class="topic-list">
@@ -128,9 +138,7 @@
         {% endfor %}
       </div>
     </div>
-    {% endif %}
-
-    {% if result.match %}
+    {% endif %} {% if result.match %}
     <div class="match-grid">
       <div>
         <h4>Matched</h4>
@@ -155,7 +163,6 @@
     </div>
     {% endif %}
   </section>
-  {% endif %}
-  {% endif %}
+  {% endif %} {% endif %}
 </div>
 {% endblock %}

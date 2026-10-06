@@ -19,6 +19,8 @@ JobPilot performs four main actions:
    keywords.
 4. Compares the extracted job topics against the resume and shows a weighted
    resume match score.
+5. Generates a downloadable Word resume that highlights job skills verified in
+   the uploaded resume while preserving its complete extracted content.
 
 The current app supports both pasted job descriptions and job links. For job
 links, it fetches the page, removes low-value HTML content, extracts the likely
@@ -35,6 +37,8 @@ provided resume.
   qualifications, education, and preferred skills.
 - Weighted resume match score.
 - Matched-topic and missing-topic lists for explainability.
+- Downloadable tailored `.docx` with verified matching skills highlighted and
+  original resume details preserved.
 - Chroma vector-store creation for uploaded resumes.
 - Unit tests for parsing, vector-store behavior, web extraction, and matching.
 
@@ -52,6 +56,7 @@ Job link or pasted JD
   -> extract important topics
   -> compare topics with resume text
   -> show match score and gaps
+  -> offer a tailored DOCX download when a resume is uploaded
 ```
 
 ## Tech Stack
@@ -117,55 +122,55 @@ matching quality, extraction quality, and reliability.
 
 These measure how fast the app responds.
 
-| Metric | What It Measures | Why It Matters |
-| --- | --- | --- |
-| Total request latency | Time from form submit to rendered result | Main user experience metric |
-| Job page fetch latency | Time to download the job link HTML | Depends on external websites |
-| HTML extraction latency | Time to clean and extract readable JD text | Should stay very low |
-| LLM parse latency | Time spent parsing the JD with Gemini | Usually the largest variable cost |
-| Resume load latency | Time to read PDF/DOCX/TXT resume text | Impacts upload experience |
-| Resume chunking latency | Time to split resume into chunks | Should be small |
-| Embedding latency | Time to generate vector embeddings | Can be slow and API-dependent |
-| Vector-store write latency | Time to write resume chunks into Chroma | Useful for RAG scalability |
-| Match-score latency | Time to compare topics with resume text | Should be very low |
+| Metric                     | What It Measures                           | Why It Matters                    |
+| -------------------------- | ------------------------------------------ | --------------------------------- |
+| Total request latency      | Time from form submit to rendered result   | Main user experience metric       |
+| Job page fetch latency     | Time to download the job link HTML         | Depends on external websites      |
+| HTML extraction latency    | Time to clean and extract readable JD text | Should stay very low              |
+| LLM parse latency          | Time spent parsing the JD with Gemini      | Usually the largest variable cost |
+| Resume load latency        | Time to read PDF/DOCX/TXT resume text      | Impacts upload experience         |
+| Resume chunking latency    | Time to split resume into chunks           | Should be small                   |
+| Embedding latency          | Time to generate vector embeddings         | Can be slow and API-dependent     |
+| Vector-store write latency | Time to write resume chunks into Chroma    | Useful for RAG scalability        |
+| Match-score latency        | Time to compare topics with resume text    | Should be very low                |
 
 ### 2. Matching Quality Metrics
 
 These measure whether the score is useful.
 
-| Metric | What It Measures | Target |
-| --- | --- | --- |
-| Match score | Weighted percentage of JD topics found in resume | Higher is better |
-| Matched topic count | Number of important topics found in resume | Higher is better |
-| Missing topic count | Number of important topics not found | Lower is better |
-| Required-skill coverage | Required skills matched / total required skills | Very important |
-| Tech-stack coverage | Tech topics matched / total tech topics | Important for technical roles |
-| Preferred-skill coverage | Preferred skills matched / total preferred skills | Useful but lower priority |
+| Metric                   | What It Measures                                  | Target                        |
+| ------------------------ | ------------------------------------------------- | ----------------------------- |
+| Match score              | Weighted percentage of JD topics found in resume  | Higher is better              |
+| Matched topic count      | Number of important topics found in resume        | Higher is better              |
+| Missing topic count      | Number of important topics not found              | Lower is better               |
+| Required-skill coverage  | Required skills matched / total required skills   | Very important                |
+| Tech-stack coverage      | Tech topics matched / total tech topics           | Important for technical roles |
+| Preferred-skill coverage | Preferred skills matched / total preferred skills | Useful but lower priority     |
 
 ### 3. Extraction Quality Metrics
 
 These measure how well the app understands a job page.
 
-| Metric | What It Measures | Why It Matters |
-| --- | --- | --- |
-| Extracted JD length | Character count after cleaning page HTML | Detects empty or noisy extraction |
-| Topic count | Number of important topics found | Detects weak parsing |
-| Required skill precision | Whether extracted required skills are truly required | Prevents inflated scores |
-| Missing field rate | Empty company, title, location, salary, etc. | Shows parser quality |
-| Fallback parse rate | How often the app uses local fallback parsing | High rate may signal LLM/API issues |
+| Metric                   | What It Measures                                     | Why It Matters                      |
+| ------------------------ | ---------------------------------------------------- | ----------------------------------- |
+| Extracted JD length      | Character count after cleaning page HTML             | Detects empty or noisy extraction   |
+| Topic count              | Number of important topics found                     | Detects weak parsing                |
+| Required skill precision | Whether extracted required skills are truly required | Prevents inflated scores            |
+| Missing field rate       | Empty company, title, location, salary, etc.         | Shows parser quality                |
+| Fallback parse rate      | How often the app uses local fallback parsing        | High rate may signal LLM/API issues |
 
 ### 4. Reliability Metrics
 
 These measure whether the system works consistently.
 
-| Metric | What It Measures |
-| --- | --- |
-| Job-link fetch failure rate | Percentage of links that cannot be fetched |
-| Unsupported page rate | Pages blocked by login, bot checks, or JavaScript rendering |
-| Resume parsing failure rate | Failed resume loads by file type |
-| LLM error rate | Failed structured parsing requests |
-| Vector-store error rate | Failed embedding or Chroma writes |
-| Test pass rate | Percentage of unit tests passing |
+| Metric                      | What It Measures                                            |
+| --------------------------- | ----------------------------------------------------------- |
+| Job-link fetch failure rate | Percentage of links that cannot be fetched                  |
+| Unsupported page rate       | Pages blocked by login, bot checks, or JavaScript rendering |
+| Resume parsing failure rate | Failed resume loads by file type                            |
+| LLM error rate              | Failed structured parsing requests                          |
+| Vector-store error rate     | Failed embedding or Chroma writes                           |
+| Test pass rate              | Percentage of unit tests passing                            |
 
 ## Latency Testing Plan
 
@@ -197,15 +202,60 @@ matching_latency = match_score_computed - job_parsed
 
 Recommended latency targets for a good local development experience:
 
-| Operation | Good Target |
-| --- | --- |
-| HTML extraction | < 200 ms |
-| Match scoring | < 100 ms |
-| Resume TXT/DOCX loading | < 500 ms |
-| Resume PDF loading | < 2 s |
-| Job page fetch | < 3 s |
-| LLM parsing | < 8 s |
-| Full resume + job-link result | < 12 s |
+| Operation                     | Good Target |
+| ----------------------------- | ----------- |
+| HTML extraction               | < 200 ms    |
+| Match scoring                 | < 100 ms    |
+| Resume TXT/DOCX loading       | < 500 ms    |
+| Resume PDF loading            | < 2 s       |
+| Job page fetch                | < 3 s       |
+| LLM parsing                   | < 8 s       |
+| Full resume + job-link result | < 12 s      |
+
+## Measured Latency Baseline
+
+Measured on October 4, 2026 with:
+
+```bash
+.venv/bin/python scripts/measure_latency.py --iterations 100 --warmups 10 --json
+```
+
+This benchmark measures the local, no-external-API path. It uses a synthetic
+resume and synthetic job HTML so the result is repeatable and does not depend on
+Google API latency, embedding latency, or public job-board network behavior.
+
+| Stage                     |      p50 |  Average |      p95 |      Max |
+| ------------------------- | -------: | -------: | -------: | -------: |
+| Resume TXT load           | 0.042 ms | 0.058 ms | 0.129 ms | 0.155 ms |
+| Resume split              | 0.027 ms | 0.031 ms | 0.053 ms | 0.056 ms |
+| HTML text extraction      | 0.394 ms | 0.434 ms | 0.653 ms | 0.764 ms |
+| Fallback JD parse         | 0.283 ms | 0.316 ms | 0.491 ms | 0.511 ms |
+| Topic extraction          | 0.120 ms | 0.134 ms | 0.216 ms | 0.244 ms |
+| Match scoring             | 0.290 ms | 0.321 ms | 0.486 ms | 0.572 ms |
+| End-to-end local pipeline | 1.165 ms | 1.297 ms | 2.010 ms | 2.193 ms |
+
+The same benchmark also measured existing local PDF resume loading without
+printing any resume content:
+
+| PDF Samples | Failures |        p50 |   Average |        p95 |        Max |
+| ----------: | -------: | ---------: | --------: | ---------: | ---------: |
+|           3 |        0 | 105.329 ms | 94.498 ms | 152.339 ms | 152.339 ms |
+
+The benchmark sample produced a `78%` match score by matching `10` of `13`
+important job topics. This score is only a sample sanity check, not a claim
+about real-world matching accuracy.
+
+Not measured in this default benchmark:
+
+- LLM structured parsing latency.
+- Google embedding latency.
+- External public job-site network latency.
+- JavaScript-rendered job-board latency.
+
+These unmeasured parts are expected to dominate real-world latency. The local
+matching logic itself is already fast; the main production latency risk is from
+network calls, LLM parsing, embeddings, and blocked or JavaScript-heavy job
+boards.
 
 ## Best Metrics to Prioritize
 
@@ -222,6 +272,40 @@ The most valuable metrics to track first are:
 
 These give the clearest picture of user experience, application reliability, and
 match quality.
+
+## How Much of the Actual Problem Is Solved
+
+The actual product problem is:
+
+```text
+Given a resume and a job link, extract the JD, understand the important topics,
+compare them with the resume, and show a useful match score with evidence.
+```
+
+Current status: JobPilot has a working MVP for this workflow. The core local
+pipeline is implemented and fast, but production-grade accuracy and reliability
+still need work.
+
+| Problem Area                      | Current Status                                                                                                                | Estimated Solved |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------: |
+| Resume upload and text extraction | Works for PDF, DOCX, TXT, Markdown, and CSV. Needs better handling for scanned PDFs and unusual layouts.                      |              80% |
+| Job-link extraction               | Works for normal public HTML pages. Needs browser rendering for JavaScript-heavy or blocked job boards.                       |              65% |
+| JD parsing and topic extraction   | Works with Gemini structured parsing and a local fallback parser. Needs stronger validation and confidence scores.            |              70% |
+| Resume-to-JD match score          | Working weighted topic score with matched and missing topics. Needs semantic matching and calibration against real examples.  |              60% |
+| Result explainability             | Shows score, important topics, matched topics, and missing topics. Needs tailoring suggestions.                               |              75% |
+| Latency testing                   | Repeatable local benchmark exists. Needs in-app timing logs for real user requests.                                           |              50% |
+| Production reliability            | Handles the happy path and some fallback cases. Needs caching, retries, better error states, and job-board-specific handling. |              45% |
+
+Overall estimate:
+
+| Level                           | Estimate |
+| ------------------------------- | -------: |
+| MVP workflow solved             |      70% |
+| Production-grade problem solved |      45% |
+
+The biggest solved part is the core workflow: upload resume, provide JD/link,
+extract topics, compare, and show a score. The biggest unsolved part is robust
+real-world behavior across many job boards and better semantic matching.
 
 ## What Can Be Improved
 

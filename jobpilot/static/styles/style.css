@@ -333,6 +333,24 @@ body {
   background: #f9fafb;
 }
 
+.download-resume-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  margin-top: 14px;
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: #135d66;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.download-resume-btn:hover {
+  background: #0f4b53;
+  color: #ffffff;
+}
+
 .match-block,
 .topic-section,
 .match-grid {

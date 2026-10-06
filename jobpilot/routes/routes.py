@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from flask import render_template, request
+from flask import abort, render_template, request, send_file, url_for
 from werkzeug.utils import secure_filename
 
 from jobpilot import app
@@ -9,6 +9,7 @@ from jobpilot.rag.loader import documents_to_text, load_resume
 from jobpilot.rag.splitter import split_resume
 from jobpilot.rag.vectorstore import build_vector_store
 from jobpilot.services.job_services import JobService
+from jobpilot.services.resume_builder import build_tailored_resume
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -78,6 +79,22 @@ def home():
             else:
                 result = None
 
+            if resume_text and result and result.get("match"):
+                generated_dir = Path(app.root_path) / "uploads" / "tailored_resumes"
+                generated_dir.mkdir(parents=True, exist_ok=True)
+                document_path = generated_dir / f"{result['job_id']}.docx"
+                document_path.write_bytes(
+                    build_tailored_resume(
+                        resume_text,
+                        result["parsed"].get("title", "the target role"),
+                        result["match"].get("matched_topics", []),
+                    )
+                )
+                result["tailored_resume_url"] = url_for(
+                    "download_tailored_resume",
+                    job_id=result["job_id"],
+                )
+
             return render_template(
                 "home.html",
                 form=form,
@@ -97,4 +114,23 @@ def home():
         form=form,
         submitted=False,
         error=error,
+    )
+
+
+@app.get("/resume/<uuid:job_id>/download")
+def download_tailored_resume(job_id):
+    document_path = (
+        Path(app.root_path)
+        / "uploads"
+        / "tailored_resumes"
+        / f"{job_id}.docx"
+    )
+    if not document_path.is_file():
+        abort(404)
+
+    return send_file(
+        document_path,
+        as_attachment=True,
+        download_name="tailored_resume.docx",
+        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     )
